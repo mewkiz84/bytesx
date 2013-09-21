@@ -292,6 +292,7 @@ eqtBig:
 	ADDQ BX, CX //; Last byte of a
 	MOVQ CX, AX
 	SUBQ $16, CX //; 16 last bytes of a
+	JMP eqtBigCheck
 
 eqtBigBody:
 	MOVOU (SI), X0
@@ -317,6 +318,7 @@ eqtBigBody:
 	ADDQ $16, DI
 
 //; Check if we are less than 16 bytes from the end
+eqtBigCheck:
 	CMPQ CX, SI
 	JG eqtBigBody
 

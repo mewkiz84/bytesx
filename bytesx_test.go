@@ -1,8 +1,12 @@
 package bytesx_test
 
-import "testing"
-import "fmt"
-import "github.com/mewkiz84/bytesx"
+import (
+	"testing"
+	"fmt"
+	"github.com/mewkiz84/bytesx"
+	"syscall"
+	"unsafe"
+)
 
 var test1 = []byte("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
 var test2 = []byte("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
@@ -38,6 +42,31 @@ func TestIndexNotEqual(t *testing.T) {
 		if got != -1 {
 			t.Errorf("IndexNotEqual test failed. Got:%d\nString1: %d \"A\"s\nString2: %d \"A\"s\nExpected: -1 ", got, i, i)
 		}
+	}
+}
+
+func TestEqualNearPageBoundary(t *testing.T) {
+	pagesize := syscall.Getpagesize()
+	b := make([]byte, 4*pagesize)
+	i := pagesize
+	for ; uintptr(unsafe.Pointer(&b[i]))%uintptr(pagesize) != 0; i++ {
+	}
+	syscall.Mprotect(b[i-pagesize:i], 0)
+	syscall.Mprotect(b[i+pagesize:i+2*pagesize], 0)
+	defer syscall.Mprotect(b[i-pagesize:i], syscall.PROT_READ|syscall.PROT_WRITE)
+	defer syscall.Mprotect(b[i+pagesize:i+2*pagesize], syscall.PROT_READ|syscall.PROT_WRITE)
+
+	// both of these should fault
+	//pagesize += int(b[i-1])
+	//pagesize += int(b[i+pagesize])
+
+	for j := 0; j < pagesize; j++ {
+		b[i+j] = 'A'
+	}
+	for j := 0; j <= pagesize; j++ {
+		fmt.Println(j)
+		bytesx.EqualThreshold(b[i:i+j], b[i+pagesize-j:i+pagesize], 0)
+		bytesx.EqualThreshold(b[i+pagesize-j:i+pagesize], b[i:i+j], 0)
 	}
 }
 
