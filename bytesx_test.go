@@ -45,7 +45,7 @@ func TestIndexNotEqual(t *testing.T) {
 	}
 }
 
-func TestEqualNearPageBoundary(t *testing.T) {
+func TestEqualThresholdNearPageBoundary(t *testing.T) {
 	pagesize := syscall.Getpagesize()
 	b := make([]byte, 4*pagesize)
 	i := pagesize
