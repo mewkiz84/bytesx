@@ -1,5 +1,5 @@
 // Package bytesx implements highly optimized byte functions which extends the 
-// bytes package in the standard library
+// bytes package in the standard library (Currently x86 64-bit only)
 package bytesx
 
 // IndexNotEqual returns the index of the first non matching byte between a and
